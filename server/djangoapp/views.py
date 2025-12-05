@@ -13,16 +13,14 @@ from django.contrib.auth import login, authenticate
 import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
-# from .populate import initiate
+from .populate import initiate
+from .models import CarMake, CarModel
 
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-
-# Create your views here.
-
-# Create a `login_request` view to handle sign in request
+# Create a `login_request`
 @csrf_exempt
 def login_user(request):
     # Get username and password from request.POST dictionary
@@ -90,7 +88,27 @@ def registration(request):
             return JsonResponse({"error": "Invalid Details"}, status=400)
 
         
+def get_cars(request):
+
+    count=CarMake.objects.filter().count()
+    print(count)
+    if count == 0:
+        # run fn to bulk upload data from populate.py
+        initiate()
     
+    # using select_related to reference both CarModel and CarMake class
+    car_models = CarModel.objects.select_related('car_make')
+
+    cars = []
+
+    for car_model in car_models:
+
+        cars.append({
+            "CarModel": car_model.name,
+            "CarMake": car_model.car_make.name
+        })
+    
+    return JsonResponse({"CarModels": cars})
 
 
 
