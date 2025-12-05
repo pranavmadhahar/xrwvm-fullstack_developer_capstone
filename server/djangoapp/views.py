@@ -29,11 +29,11 @@ def login_user(request):
     data = json.loads(request.body)
     username = data['userName']
     password = data['password']
-    # Try to check if provide credential can be authenticated
+    # Check user credentials
     user = authenticate(username=username, password=password)
     data = {"userName": username}
     if user is not None:
-        # If user is valid, call login method to login current user
+        # If user is valid, call login method to login
         login(request, user)
         data = {"userName": username, "status": "Authenticated"}
     return JsonResponse(data)

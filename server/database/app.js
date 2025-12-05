@@ -8,16 +8,18 @@ const port = 3030;
 app.use(cors())
 app.use(require('body-parser').urlencoded({ extended: false }));
 
+// use fs to read data from the json file & then convert json into js obj, 
 const reviews_data = JSON.parse(fs.readFileSync("reviews.json", 'utf8'));
 const dealerships_data = JSON.parse(fs.readFileSync("dealerships.json", 'utf8'));
 
+// connect the db to mongodb
 mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
 
-
+// import mongoose models created separately 
 const Reviews = require('./review');
-
 const Dealerships = require('./dealership');
 
+// First delete all data in mentioned collection and then insert bulk data 
 try {
   Reviews.deleteMany({}).then(()=>{
     Reviews.insertMany(reviews_data['reviews']);
@@ -58,22 +60,42 @@ app.get('/fetchReviews/dealer/:id', async (req, res) => {
 
 // Express route to fetch all dealerships
 app.get('/fetchDealers', async (req, res) => {
-//Write your code here
+    try {
+    const documents = await Dealerships.find();
+    res.json(documents);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching documents' });
+  }
+ 
 });
 
 // Express route to fetch Dealers by a particular state
 app.get('/fetchDealers/:state', async (req, res) => {
-//Write your code here
+    try {
+    const documents = await Dealerships.find({state: req.params.state});
+    res.json(documents);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching documents' });
+  }
+
 });
 
 // Express route to fetch dealer by a particular id
 app.get('/fetchDealer/:id', async (req, res) => {
-//Write your code here
+    try {
+    const documents = await Dealerships.find({id: req.params.id});
+    res.json(documents);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching documents' });
+  }
+
 });
 
 //Express route to insert review
 app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
+
   data = JSON.parse(req.body);
+  // find all reviews & sort them in decending order
   const documents = await Reviews.find().sort( { id: -1 } )
   let new_id = documents[0]['id']+1
 

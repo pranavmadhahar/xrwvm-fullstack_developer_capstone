@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 from . import views
 
+# API's for login, register & logout
 app_name = 'djangoapp'
 urlpatterns = [
     # path for registration
