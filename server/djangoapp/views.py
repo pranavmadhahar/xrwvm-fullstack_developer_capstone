@@ -122,9 +122,8 @@ def get_dealerships(request, state="All"):
 
 # Create view to render the dealer details
 def get_dealer_details(request, dealer_id):
-
     if dealer_id:
-        endpoint = f"/fetchDealers/{str(dealer_id)}"
+        endpoint = f"/fetchDealer/{str(dealer_id)}"
         dealership = get_request(endpoint)
         return JsonResponse({"status":200,"dealer":dealership})
     else:
@@ -134,14 +133,25 @@ def get_dealer_details(request, dealer_id):
 def get_dealer_reviews(request, dealer_id):
     # if dealer id has been provided
     if(dealer_id):
-        endpoint = "/fetchReviews/dealer/"+str(dealer_id)
-        reviews = get_request(endpoint)
+        endpoint_reviews = f"/fetchReviews/dealer/{str(dealer_id)}"
+        endpoint_dealer = f"/fetchDealer/{str(dealer_id)}"
+
+        reviews = get_request(endpoint_reviews)
+        response = get_request(endpoint_dealer)
+        # response will return a list which contain dict
+        dealer_details = response[0]
+
         for review_detail in reviews:
             # call sentiment analyzer microservice
             response = analyze_review_sentiments(review_detail['review'])
-            print(response)
+            print(f"Reviews:  {reviews}")
             # add new key:value pair in reviews dict 
             review_detail['sentiment'] = response['sentiment']
+            review_detail['city'] = dealer_details['city']
+            review_detail['address'] = dealer_details['address']
+            review_detail['zip'] = dealer_details['zip']
+            review_detail['state'] = dealer_details['state']
+      
         return JsonResponse({"status":200,"reviews":reviews})
     else:
         return JsonResponse({"status":400,"message":"Bad Request"})
@@ -149,12 +159,15 @@ def get_dealer_reviews(request, dealer_id):
 
 # Create a `add_review` view to submit a review
 def add_review(request):
+    
     if(request.user.is_anonymous == False):
         data = json.loads(request.body)
         try:
             response = post_review(data)
-            return JsonResponse({"status":200})
-        except:
-            return JsonResponse({"status":401,"message":"Error in posting review"})
+            print(f"Backend response: {response}")
+            return JsonResponse(response)
+        except Exception as e:
+            print("Error posting review ", e)
+            return JsonResponse({"status":500,"message":"Backend error"})
     else:
         return JsonResponse({"status":403,"message":"Unauthorized"})

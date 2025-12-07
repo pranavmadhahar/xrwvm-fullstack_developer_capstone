@@ -1,16 +1,15 @@
 FROM node:18.12.1-bullseye-slim
 
-RUN npm install -g npm@9.1.3
+WORKDIR /usr/src/app
 
-ADD package.json .
-ADD app.js .
-ADD review.js .
-ADD dealership.js .
-ADD data/dealerships.json .
-ADD data/reviews.json .
-COPY . .
+# Copy dependency manifests first
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-EXPOSE 3030
+# Copy the rest of the source code
+COPY . .
 
-CMD [ "node", "app.js" ]
+EXPOSE 3030
+CMD ["node", "app.js"]

@@ -9,29 +9,37 @@ app.use(cors())
 app.use(require('body-parser').urlencoded({ extended: false }));
 
 // use fs to read data from the json file & then convert json into js obj, 
-const reviews_data = JSON.parse(fs.readFileSync("reviews.json", 'utf8'));
-const dealerships_data = JSON.parse(fs.readFileSync("dealerships.json", 'utf8'));
-
-// connect the db to mongodb
-mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
+const reviews_data = JSON.parse(fs.readFileSync("./data/reviews.json", 'utf8'));
+const dealerships_data = JSON.parse(fs.readFileSync("./data/dealerships.json", 'utf8'));
 
 // import mongoose models created separately 
 const Reviews = require('./review');
 const Dealerships = require('./dealership');
 
-// First delete all data in mentioned collection and then insert bulk data 
-try {
-  Reviews.deleteMany({}).then(()=>{
-    Reviews.insertMany(reviews_data['reviews']);
-  });
-  Dealerships.deleteMany({}).then(()=>{
-    Dealerships.insertMany(dealerships_data['dealerships']);
-  });
+async function initDB(){
+
+  try {
+
+    // connect the db to mongodb
+    await mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
+    console.log("Mongodb connected");
+
+    // First delete all data in mentioned collection and then insert bulk data 
+    await Reviews.deleteMany({});
+    await Reviews.insertMany(reviews_data['reviews']);
+
+    await Dealerships.deleteMany({});
+    await Dealerships.insertMany(dealerships_data['dealerships']);
+    
+  } catch (error) {
+
+    res.status(500).json({ error: 'Error fetching documents' });
+    
+  }
   
-} catch (error) {
-  res.status(500).json({ error: 'Error fetching documents' });
 }
 
+initDB()
 
 // Express route to home
 app.get('/', async (req, res) => {
@@ -92,9 +100,9 @@ app.get('/fetchDealer/:id', async (req, res) => {
 });
 
 //Express route to insert review
-app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
+app.post('/insert_review', express.json(), async (req, res) => {
 
-  data = JSON.parse(req.body);
+  const data = req.body; //already parsed JSON by express.json()
   // find all reviews & sort them in decending order
   const documents = await Reviews.find().sort( { id: -1 } )
   let new_id = documents[0]['id']+1
@@ -113,9 +121,9 @@ app.post('/insert_review', express.raw({ type: '*/*' }), async (req, res) => {
 
   try {
     const savedReview = await review.save();
-    res.json(savedReview);
+    res.json({status: 200, review: savedReview});
   } catch (error) {
-		console.log(error);
+		console.error("Error inserting review: ", error);
     res.status(500).json({ error: 'Error inserting review' });
   }
 });

@@ -1,10 +1,18 @@
 FROM python:3.9.18-slim-bookworm
 
-
 WORKDIR /python-docker
 
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
+
 COPY . .
+
+# Optional: just to verify files copied
 RUN ls
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+
+# Expose the port Flask will listen on
+EXPOSE 5050
+
+# Run Flask on 0.0.0.0:5050
+CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5050"]
+
