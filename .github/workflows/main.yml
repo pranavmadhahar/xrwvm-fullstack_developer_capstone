@@ -55,5 +55,7 @@ jobs:
       - name: Run Linter
         run: |
           # This command finds all JavaScript files recursively and runs JSHint on them
-          find ./server/database -name "*.js" -exec jshint {} +
+          jshint ./server/database \
+            --config ./server/database/.jshintrc \
+            --exclude-path ./server/database/.jshintignore
           echo "Linted all the js files successfully"
