@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const fs = require('fs');
-const  cors = require('cors')
-const app = express()
+const  cors = require('cors');
+const app = express();
 const port = 3030;
 
-app.use(cors())
+app.use(cors());
 app.use(require('body-parser').urlencoded({ extended: false }));
 
 // use fs to read data from the json file & then convert json into js obj, 
@@ -16,7 +16,7 @@ const dealerships_data = JSON.parse(fs.readFileSync("./data/dealerships.json", '
 const Reviews = require('./review');
 const Dealerships = require('./dealership');
 
-async function initDB(){
+async function initDB(req, res){
 
   try {
 
@@ -26,10 +26,10 @@ async function initDB(){
 
     // First delete all data in mentioned collection and then insert bulk data 
     await Reviews.deleteMany({});
-    await Reviews.insertMany(reviews_data['reviews']);
+    await Reviews.insertMany(reviews_data.reviews);
 
     await Dealerships.deleteMany({});
-    await Dealerships.insertMany(dealerships_data['dealerships']);
+    await Dealerships.insertMany(dealerships_data.dealerships);
     
   } catch (error) {
 
@@ -39,11 +39,11 @@ async function initDB(){
   
 }
 
-initDB()
+initDB();
 
 // Express route to home
 app.get('/', async (req, res) => {
-    res.send("Welcome to the Mongoose API")
+    res.send("Welcome to the Mongoose API");
 });
 
 // Express route to fetch all reviews
@@ -104,19 +104,19 @@ app.post('/insert_review', express.json(), async (req, res) => {
 
   const data = req.body; //already parsed JSON by express.json()
   // find all reviews & sort them in decending order
-  const documents = await Reviews.find().sort( { id: -1 } )
-  let new_id = documents[0]['id']+1
+  const documents = await Reviews.find().sort( { id: -1 } );
+  let new_id = documents[0].id + 1;
 
   const review = new Reviews({
 		"id": new_id,
-		"name": data['name'],
-		"dealership": data['dealership'],
-		"review": data['review'],
-		"purchase": data['purchase'],
-		"purchase_date": data['purchase_date'],
-		"car_make": data['car_make'],
-		"car_model": data['car_model'],
-		"car_year": data['car_year'],
+		"name": data.name,
+		"dealership": data.dealership,
+		"review": data.review,
+		"purchase": data.purchase,
+		"purchase_date": data.purchase_date,
+		"car_make": data.car_make,
+		"car_model": data.car_model,
+		"car_year": data.car_year,
 	});
 
   try {

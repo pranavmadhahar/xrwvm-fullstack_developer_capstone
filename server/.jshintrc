@@ -1,0 +1,8 @@
+{
+  "esversion": 8,
+  "node": true,
+  "undef": true,
+  "unused": false,
+  "eqeqeq": true,
+  "curly": true
+}
