@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dealership-service
+  labels:
+    app: dealership
+spec:
+  type: NodePort   # <-- this line is required for creating external access
+  selector:
+    run: dealership   # matches Pod labels from Deployment
+  ports:
+    - name: http
+      port: 8000        # Service port inside the cluster
+      targetPort: 8000  # Matches containerPort in Deployment
+      nodePort: 30080   # Fixed NodePort for external access

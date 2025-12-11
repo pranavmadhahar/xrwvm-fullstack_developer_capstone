@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: senti-analyzer
+  name: senti-analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: senti-analyzer
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: senti-analyzer
+    spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: senti-analyzer
+          image: ghcr.io/pranavmadhahar/xrwvm-fullstack_developer_capstone/senti_analyzer:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5050
+              protocol: TCP
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      restartPolicy: Always

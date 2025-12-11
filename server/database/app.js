@@ -8,7 +8,7 @@ const port = 3030;
 app.use(cors());
 app.use(require('body-parser').urlencoded({ extended: false }));
 
-// use fs to read data from the json file & then convert json into js obj, 
+// use fs to read data from the json file & then convert json into js obj,
 const reviews_data = JSON.parse(fs.readFileSync("./data/reviews.json", 'utf8'));
 const dealerships_data = JSON.parse(fs.readFileSync("./data/dealerships.json", 'utf8'));
 
@@ -16,15 +16,17 @@ const dealerships_data = JSON.parse(fs.readFileSync("./data/dealerships.json", '
 const Reviews = require('./review');
 const Dealerships = require('./dealership');
 
-async function initDB(req, res){
+async function initDB(){
 
   try {
 
     // connect the db to mongodb
-    await mongoose.connect("mongodb://mongo_db:27017/",{'dbName':'dealershipsDB'});
+    // await mongoose.connect("mongodb://mongo-service:27017/",{'dbName':'dealershipsDB'};
+    //MONGO_URL defined in database-service.yaml
+    await mongoose.connect(process.env.MONGO_URL);
     console.log("Mongodb connected");
 
-    // First delete all data in mentioned collection and then insert bulk data 
+    // First delete all data in mentioned collection and then insert bulk data
     await Reviews.deleteMany({});
     await Reviews.insertMany(reviews_data.reviews);
 
@@ -33,7 +35,7 @@ async function initDB(req, res){
     
   } catch (error) {
 
-    res.status(500).json({ error: 'Error fetching documents' });
+    console.error('Error initializing database', error );
     
   }
   
@@ -110,13 +112,13 @@ app.post('/insert_review', express.json(), async (req, res) => {
   const review = new Reviews({
 		"id": new_id,
 		"name": data.name,
-		"dealership": data.dealership,
+		"dealership": Number(data.dealership),
 		"review": data.review,
 		"purchase": data.purchase,
 		"purchase_date": data.purchase_date,
 		"car_make": data.car_make,
 		"car_model": data.car_model,
-		"car_year": data.car_year,
+		"car_year": Number(data.car_year),
 	});
 
   try {
@@ -130,5 +132,6 @@ app.post('/insert_review', express.json(), async (req, res) => {
 
 // Start the Express server
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  // console.log(`Server is running on http://localhost:${port}`);
+  console.log(`http://node-backend-service:${port}/`)
 });

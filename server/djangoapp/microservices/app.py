@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from nltk.sentiment import SentimentIntensityAnalyzer
 import json
 app = Flask("Sentiment Analyzer")
@@ -26,7 +26,8 @@ def analyze_sentiment(input_txt):
         res = "negative"
     elif (neu > neg and neu > pos):
         res = "neutral"
-    res = json.dumps({"sentiment": res})
+    # res = json.dumps({"sentiment": res})   # This is sending text/html response
+    return jsonify({"sentiment": res})   # Proper JSON response
     print(res)
     return res
 

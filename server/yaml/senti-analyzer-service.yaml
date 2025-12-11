@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: senti-analyzer-service
+  labels:
+    app: senti-analyzer
+spec:
+  selector:
+    run: senti-analyzer
+  ports:
+    - name: http
+      port: 5050        # Service port inside the cluster
+      targetPort: 5050  # Matches containerPort in Deployment
+  type: NodePort        # Expose externally; change to ClusterIP if internal-only

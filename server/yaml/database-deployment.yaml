@@ -1,0 +1,84 @@
+# ----------------------
+# MongoDB Deployment
+# ----------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:   # Probe checks if Mongo is listening on port 27017
+            tcpSocket:      
+              port: 27017
+            initialDelaySeconds: 5   # Waits 5 secs before first check
+            periodSeconds: 10   # check every 10s
+      volumes:
+        - name: mongo-data
+          emptyDir: {}   # replace with PVC for persistence
+
+---
+# ----------------------
+# Node.js Backend Deployment
+# ----------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-backend
+  labels:
+    app: node-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-backend
+  template:
+    metadata:
+      labels:
+        app: node-backend
+    spec:
+      initContainers:
+        - name: wait-for-mongo
+          image: busybox:latest
+          command: ['sh', '-c', 'until nc -z mongo-service 27017; do echo waiting for mongo; sleep 2; done;']
+      containers:
+        - name: node-backend
+          image: ghcr.io/pranavmadhahar/xrwvm-fullstack_developer_capstone/nodeapp:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3030
+          env:
+            - name: MONGO_URL
+              value: mongodb://mongo-service:27017/dealershipsDB
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

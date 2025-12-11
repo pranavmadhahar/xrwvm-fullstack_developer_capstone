@@ -1,0 +1,36 @@
+# ----------------------
+# MongoDB Service
+# ----------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  labels:
+    app: mongo
+spec:
+  selector:
+    app: mongo
+  ports:
+    - name: mongo
+      port: 27017        # Port exposed by the Service
+      targetPort: 27017  # Port inside the Pod container
+  type: ClusterIP        # Internal-only service
+
+---
+# ----------------------
+# Node.js Backend Service
+# ----------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-backend-service
+  labels:
+    app: node-backend
+spec:
+  selector:
+    app: node-backend
+  ports:
+    - name: http
+      port: 3030         # Port exposed by the Service
+      targetPort: 3030   # Port inside the Pod container
+  type: NodePort         # Exposed externally for Django/frontend
