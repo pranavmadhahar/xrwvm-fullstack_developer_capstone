@@ -133,5 +133,5 @@ app.post('/insert_review', express.json(), async (req, res) => {
 // Start the Express server
 app.listen(port, () => {
   // console.log(`Server is running on http://localhost:${port}`);
-  console.log(`http://node-backend-service:${port}/`)
+  console.log(`http://node-backend-service:${port}/`);
 });
